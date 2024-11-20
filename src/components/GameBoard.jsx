@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { connectedWords } from "./../data";
+import AttemptsDisplay from "./AttemptsDisplay"; // Import the AttemptsDisplay component
 
 const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => {
   const [words, setWords] = useState([]);
   const [selected, setSelected] = useState([]);
   const [resetKey, setResetKey] = useState(0);
-  const [gameStatus, setGameStatus] = useState(""); // Track game status (win, lose)
-  const [isGameOver, setIsGameOver] = useState(false); // Track if game is over
+  const [gameStatus, setGameStatus] = useState(""); // Initially, no game status
+  const [isGameOver, setIsGameOver] = useState(false);
 
   useEffect(() => {
+    // Fetch words when game configuration changes
     const fetchWords = () => {
       const availableGroups = connectedWords.get(groupSize) || [];
       const shuffledGroups = shuffleArray(availableGroups);
@@ -19,7 +21,7 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
           selectedWords.push(
             ...group.map((word) => ({
               word,
-              group: availableGroups.indexOf(group) + 1, // Group ID is based on index of group
+              group: availableGroups.indexOf(group) + 1,
               status: "neutral",
             }))
           );
@@ -30,12 +32,11 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
       return shuffleArray(selectedWords);
     };
 
-    // Reset game when groupSize, itemCount, or resetKey changes
     setWords(fetchWords());
-    setSelected([]);
-    setGameStatus(""); // Reset game status
-    setIsGameOver(false); // Reset game over flag
-  }, [groupSize, itemCount, resetKey]);
+    setSelected([]); // Reset selected words
+    setGameStatus(""); // Reset game status on new game
+    setIsGameOver(false); // Set game over to false when resetting the game
+  }, [groupSize, itemCount, resetKey]); // Trigger effect when groupSize, itemCount, or resetKey changes
 
   const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
@@ -77,24 +78,30 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
         }, 2000);
       }
 
-      setSelected([]);
-      setAttempts((prevAttempts) => prevAttempts + 1); // Safe state update with functional form
+      setSelected([]); // Reset selected words after each selection
+      setAttempts((prevAttempts) => prevAttempts + 1);
     }
   }, [selected]);
 
   useEffect(() => {
+    // Check if the game is over
     const allCorrect = words.every((word) => word.status === "correctPending");
-
+  
     if (allCorrect) {
-      setGameStatus("win");
-      setIsGameOver(true); // Game ends with a win
+      setGameStatus("win"); // Player wins
+      setIsGameOver(true); // End the game
+    } else if (attempts >= 10 && !isGameOver) { // Player loses after 10 attempts
+      setGameStatus("loss");
+      setIsGameOver(true); // End the game
     }
-  }, [words]);
+  }, [words, attempts, isGameOver]); // Add isGameOver to prevent multiple updates
+  
 
   const handleReset = () => {
     setAttempts(0);
-    setResetKey((prev) => prev + 1);
-    setIsGameOver(false); // Reset game over flag
+    setResetKey((prev) => prev + 1); // Increment reset key to trigger game reset
+    setIsGameOver(false); // Set game over to false when resetting the game
+    setGameStatus(""); // Reset game status to empty
   };
 
   return (
@@ -140,16 +147,12 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
         ))}
       </div>
 
-      {/* Conditional rendering for win/lose message */}
-      {isGameOver ? (
+      {/* Show result only after game is over */}
+      {isGameOver && (
         <div className="mt-4 text-center">
-          <h2 className="text-3xl font-bold text-green-500">
+          <h2 className="text-3xl font-bold text-red-500">
             {gameStatus === "win" ? "You Win!" : "You Lose!"}
           </h2>
-        </div>
-      ) : (
-        <div className="mt-4 text-center">
-          <h2 className="text-3xl font-bold text-red-500">Game In Progress...</h2>
         </div>
       )}
 
@@ -162,7 +165,8 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
         </button>
       </div>
 
-      <p className="text-center mt-2">Attempts: {attempts}</p>
+      {/* Pass the attempts to the AttemptsDisplay component */}
+      <AttemptsDisplay attempts={attempts} />
     </div>
   );
 };
