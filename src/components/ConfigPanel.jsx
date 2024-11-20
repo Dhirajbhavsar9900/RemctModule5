@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Draggable from "react-draggable"; // Import the Draggable component
+import Draggable from "react-draggable";
 
 const ConfigPanel = ({ groupSize, setGroupSize, itemCount, setItemCount, columns, setColumns }) => {
   const [isExpanded, setIsExpanded] = useState(false); // State to track if the panel is expanded
@@ -21,6 +21,7 @@ const ConfigPanel = ({ groupSize, setGroupSize, itemCount, setItemCount, columns
   return (
     <Draggable
       bounds="parent" // Limits the movement to the parent element's bounds
+      disabled={isExpanded} // Disable dragging when the panel is expanded
       onStart={() => !isSliderActive} // Prevent dragging while slider is active
     >
       <div className="absolute top-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg flex flex-col gap-4 transition-all duration-500 ease-in-out cursor-grab hover:cursor-grabbing">
@@ -31,14 +32,14 @@ const ConfigPanel = ({ groupSize, setGroupSize, itemCount, setItemCount, columns
         >
           {isExpanded ? "Collapse Config" : "Expand Config"}
         </button>
-
         {/* Expanded Config Panel */}
         {isExpanded && (
           <div className="flex flex-col gap-4 mt-4 transition-all duration-500 ease-in-out transform opacity-100">
             {/* Group Size */}
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-300">Group Size: {groupSize}</label>
+            <div className="flex flex-col">
+              <label htmlFor="small-range" className="block mb-2 text-sm font-medium text-gray-300">Group Size: {groupSize}</label>
               <input
+                id="small-range"
                 type="range"
                 min="2"
                 max="4"
@@ -48,14 +49,15 @@ const ConfigPanel = ({ groupSize, setGroupSize, itemCount, setItemCount, columns
                 onMouseUp={handleSliderEnd}
                 onTouchStart={handleSliderStart}
                 onTouchEnd={handleSliderEnd}
-                className="w-48 bg-blue-600 rounded-full transition-all duration-300 ease-in-out"
+                className="w-full h-[3px] bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
               />
             </div>
 
             {/* Item Count */}
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-300">Item Count: {itemCount}</label>
+            <div className="flex flex-col">
+              <label htmlFor="medium-range" className="block mb-2 text-sm font-medium text-gray-300">Item Count: {itemCount}</label>
               <input
+                id="medium-range"
                 type="range"
                 min="4"
                 max="12"
@@ -65,14 +67,15 @@ const ConfigPanel = ({ groupSize, setGroupSize, itemCount, setItemCount, columns
                 onMouseUp={handleSliderEnd}
                 onTouchStart={handleSliderStart}
                 onTouchEnd={handleSliderEnd}
-                className="w-48 bg-blue-600 rounded-full transition-all duration-300 ease-in-out"
+                className="w-full h-[3px] bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
               />
             </div>
 
             {/* Columns */}
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-300">Columns: {columns}</label>
+            <div className="flex flex-col">
+              <label htmlFor="large-range" className="block mb-2 text-sm font-medium text-gray-300">Columns: {columns}</label>
               <input
+                id="large-range"
                 type="range"
                 min="2"
                 max="4"
@@ -82,7 +85,7 @@ const ConfigPanel = ({ groupSize, setGroupSize, itemCount, setItemCount, columns
                 onMouseUp={handleSliderEnd}
                 onTouchStart={handleSliderStart}
                 onTouchEnd={handleSliderEnd}
-                className="w-48 bg-blue-600 rounded-full transition-all duration-300 ease-in-out"
+                className="w-full h-[3px] bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
               />
             </div>
           </div>

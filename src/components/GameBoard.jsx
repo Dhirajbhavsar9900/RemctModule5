@@ -89,7 +89,7 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
   };
 
   return (
-    <div className="items-center justify-center flex flex-col">
+    <div className="items-center h-screen justify-center flex flex-col">
       <h1 className="text-xl font-bold text-center mb-4">
         Connect group of {groupSize} words by clicking on related words
       </h1>
