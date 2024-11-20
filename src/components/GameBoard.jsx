@@ -60,21 +60,21 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
           );
         }, 1500); // Animation time (1.5 seconds)
       } else {
-        // Mark incorrect words for visual feedback
+        // Mark incorrect words for visual feedback (keep red color for 2 seconds)
         setWords((prev) =>
           prev.map((word) =>
             selected.includes(word) ? { ...word, status: "incorrect" } : word
           )
         );
 
-        // Reset the incorrect visual feedback after 1 second (reset to neutral state)
+        // Reset the incorrect visual feedback after 2 seconds (keep red for a brief period)
         setTimeout(() => {
           setWords((prev) =>
             prev.map((word) =>
               selected.includes(word) ? { ...word, status: "neutral" } : word
             )
           );
-        }, 1000); // Reset time for incorrect selection
+        }, 2000); // Reset time for incorrect selection (2 seconds)
       }
 
       // Clear selection and increment attempts
@@ -118,7 +118,8 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
                 : "bg-gray-200 text-black"
             }`}
             style={{
-              flex: `0 1 calc(100% / ${columns} - 10px)`, // Adjust width calculation
+              flex: `0 1 calc(100% / ${columns} - 10px)`, // Adjust width calculation based on columns
+              boxShadow : `0 1 calc(100% / ${columns} - 10px)`, // Adjust
               minWidth: "160px", // Ensure a minimum width for the buttons
               height: "40px", // Fix the height of the buttons to be uniform
               opacity: word.status === "correctPending" ? 0 : 1, // Use opacity for smooth fade-out effect
