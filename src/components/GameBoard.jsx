@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { connectedWords } from "./../data";
-import AttemptsDisplay from "./AttemptsDisplay";
+import { connectedWords } from "./../data"; // Assuming connectedWords is imported from data.js
+import AttemptsDisplay from "./AttemptsDisplay"; // Assuming this is a custom component for displaying attempts
 
 const GameBoard = ({
   groupSize,
@@ -14,14 +14,17 @@ const GameBoard = ({
   const [words, setWords] = useState([]);
   const [selected, setSelected] = useState([]);
   const [resetKey, setResetKey] = useState(0);
-  const [statusMessage, setStatusMessage] = useState(""); // To show Win/Lose message
+  const [statusMessage, setStatusMessage] = useState(""); // Initially empty to hide the message
+  const [winCount, setWinCount] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false); // Track if game is started
 
-  // Update the number of words based on the groupSize
   const getNumberOfTiles = () => {
-    if (groupSize === 2) return 8; // 2-group size, 8 tiles
-    if (groupSize === 3) return 12; // 3-group size, 12 tiles
-    if (groupSize === 4) return 16; // 4-group size, 16 tiles
-    return 20; // Default number of tiles for other group sizes
+    if (itemCount === 4) return 8;
+    if (itemCount === 6) return 12;
+    if (itemCount === 8) return 16;
+    if (itemCount === 10) return 20;
+    if (itemCount === 12) return 44;
+    return 20;
   };
 
   useEffect(() => {
@@ -30,7 +33,6 @@ const GameBoard = ({
       const shuffledGroups = shuffleArray(availableGroups);
       let selectedWords = [];
 
-      // Adjust the number of tiles based on group size
       const requiredTiles = getNumberOfTiles();
       let count = 0;
 
@@ -51,10 +53,12 @@ const GameBoard = ({
       return shuffleArray(selectedWords);
     };
 
-    setWords(fetchWords());
-    setSelected([]);
-    setStatusMessage(""); // Reset status message on game reset
-  }, [groupSize, itemCount, resetKey]);
+    if (gameStarted) {
+      setWords(fetchWords());
+      setSelected([]);
+      setStatusMessage(""); // Reset status message to empty on game reset
+    }
+  }, [groupSize, itemCount, resetKey, gameStarted]);
 
   useEffect(() => {
     setAttempts(0); // Reset attempts when itemCount, groupSize, or columns change
@@ -75,13 +79,12 @@ const GameBoard = ({
       if (isMatch) {
         setWords((prev) =>
           prev.map((word) =>
-            selected.includes(word) ? { ...word, status: "correctPending" } : word
+            selected.includes(word) ? { ...word, status: "correct" } : word // Change status to 'correct' after the match
           )
         );
-
         setTimeout(() => {
           setWords((prev) =>
-            prev.filter((word) => !selected.includes(word))
+            prev.filter((word) => !selected.includes(word)) // Remove matched words from display
           );
         }, 1500);
       } else {
@@ -107,17 +110,31 @@ const GameBoard = ({
   }, [selected]);
 
   useEffect(() => {
-    if (words.length === 0) {
+    const isGameCompleted = words.every((word) => word.status === "correct");
+
+    if (isGameCompleted) {
       setStatusMessage("🎉 Congratulations! You Win! 🎉");
+      setWinCount((prevCount) => prevCount + 1); // Increment win count
     } else if (attempts >= maxAttempts) {
       setStatusMessage("😢 Game Over! You Lose! 😢");
+
+      // Automatically reload the page if the user loses
+      setTimeout(() => {
+        window.location.reload(); // Page reload
+      }, 1500); // Wait 1.5 seconds before reload to show the "Game Over" message
     }
   }, [words, attempts, maxAttempts]);
 
   const handleReset = () => {
     setAttempts(0);
     setResetKey((prev) => prev + 1);
-    setStatusMessage(""); // Clear the status message on reset
+    setStatusMessage(""); // Status message is cleared only after reset and game start
+    setGameStarted(false); // Reset game started flag
+  };
+
+  const handleStartGame = () => {
+    setGameStarted(true); // Set game as started
+    setStatusMessage(""); // Clear the status message when starting a new game
   };
 
   return (
@@ -126,8 +143,13 @@ const GameBoard = ({
         Connect group of {groupSize} words by clicking on related words
       </h1>
 
-      {statusMessage && (
-        <div className="text-2xl font-bold text-center mb-6 text-red-600">
+      {/* Only display the message if the game is over or win */}
+      {gameStarted && (
+        <div
+          className={`text-2xl font-bold text-center mb-6 ${
+            statusMessage ? "block text-red-600" : "hidden"
+          }`}
+        >
           {statusMessage}
         </div>
       )}
@@ -135,7 +157,7 @@ const GameBoard = ({
       <div
         className="flex flex-wrap justify-center"
         style={{
-          maxWidth: `${columns * 500}px`,
+          maxWidth: `${columns * 500}px`, // Dynamic max width based on columns
           gap: "8px",
           margin: "0 auto",
         }}
@@ -145,7 +167,7 @@ const GameBoard = ({
             key={index}
             className={`p-2 border rounded shadow text-center transition duration-200 ${
               word.status === "correct"
-                ? "bg-green-500 text-white"
+                ? "bg-green-500 text-white tile-fade-out" // Apply the fade-out class when correct
                 : word.status === "incorrect"
                 ? "bg-red-500 text-white"
                 : word.status === "correctPending"
@@ -155,7 +177,7 @@ const GameBoard = ({
                 : "bg-orange-500 text-white"
             }`}
             style={{
-              flex: `0 1 calc(100% / ${columns} - 10px)`,
+              flex: `0 1 calc(100% / ${columns} - 10px)`, // Dynamic columns
               minWidth: "160px",
               height: "40px",
               opacity: word.status === "correctPending" ? 0 : 1,
@@ -169,13 +191,13 @@ const GameBoard = ({
         ))}
       </div>
 
-      <div className="mt-8">
+      <div className="flex justify-center m-2 flex-col">
         <AttemptsDisplay attempts={attempts} maxAttempts={maxAttempts} />
         <button
-          onClick={handleReset}
-          className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow-lg"
+          onClick={gameStarted ? handleReset : handleStartGame}
+          className="px-4 py-2 mb-2 bg-green-600 text-white rounded-lg shadow-lg"
         >
-          Reset Game
+          {gameStarted ? "Reset Game" : "Start Game"}
         </button>
       </div>
     </div>
@@ -183,4 +205,3 @@ const GameBoard = ({
 };
 
 export default GameBoard;
-  
