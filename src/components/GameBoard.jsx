@@ -17,6 +17,7 @@ const GameBoard = ({
   const [statusMessage, setStatusMessage] = useState(""); // Initially empty to hide the message
   const [winCount, setWinCount] = useState(0);
   const [gameStarted, setGameStarted] = useState(false); // Track if game is started
+  const [isFirstGame, setIsFirstGame] = useState(true); // Track if it's the first game
 
   const getNumberOfTiles = () => {
     if (itemCount === 4) return 8;
@@ -130,6 +131,7 @@ const GameBoard = ({
     setResetKey((prev) => prev + 1);
     setStatusMessage(""); // Status message is cleared only after reset and game start
     setGameStarted(false); // Reset game started flag
+    setIsFirstGame(false); // Mark that the game is no longer the first game after reset
   };
 
   const handleStartGame = () => {
@@ -193,9 +195,13 @@ const GameBoard = ({
         <AttemptsDisplay attempts={attempts} maxAttempts={maxAttempts} />
         <button
           onClick={gameStarted ? handleReset : handleStartGame}
-          className="px-4 py-2 mb-2 bg-green-600 text-white rounded-lg shadow-lg"
+          className={`px-4 py-2 mb-2 text-white rounded-lg shadow-lg transition-colors duration-300 ${
+            gameStarted || !isFirstGame
+              ? "bg-red-600 hover:bg-red-500"
+              : "bg-green-600 hover:bg-green-500"
+          }`}
         >
-          {gameStarted ? "Reset Game" : "Start Game"}
+          {gameStarted ? "Reset Game" : isFirstGame ? "Start Game" : "Start Game"}
         </button>
       </div>
     </div>

@@ -34,8 +34,17 @@ const ConfigPanel = ({
   };
 
   return (
-    <Draggable bounds="parent" disabled={isExpanded}>
-      <div className="absolute top-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg flex flex-col gap-4 transition-all duration-500 ease-in-out cursor-grab hover:cursor-grabbing">
+    <Draggable
+      bounds="parent"
+      disabled={isExpanded}
+      onStart={() => setIsSliderActive(true)}
+      onStop={() => setIsSliderActive(false)}
+    >
+      <div
+        className={`absolute top-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg flex flex-col gap-4 cursor-grab ${
+          isSliderActive ? "transition-none" : "transition-all duration-500 ease-in-out"
+        }`}
+      >
         <button
           onClick={togglePanel}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-xl focus:outline-none transition-all duration-300 text-sm font-medium"
