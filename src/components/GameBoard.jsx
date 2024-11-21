@@ -165,13 +165,13 @@ const GameBoard = ({
         {words.map((word, index) => (
           <button
             key={index}
-            className={`p-2 border rounded shadow text-center transition duration-200 ${
+            className={`p-2 border rounded shadow text-center transition duration-300 ease-in-out ${
               word.status === "correct"
-                ? "bg-green-500 text-white tile-fade-out" // Apply the fade-out class when correct
+                ? "bg-green-500 text-white opacity-0 invisible" // Fade out the tile
                 : word.status === "incorrect"
                 ? "bg-red-500 text-white"
                 : word.status === "correctPending"
-                ? "bg-green-500 text-white opacity-100 transition-opacity duration-1500"
+                ? "bg-green-500 text-white opacity-100"
                 : selected.includes(word)
                 ? "bg-blue-500 text-white"
                 : "bg-orange-500 text-white"
@@ -180,9 +180,7 @@ const GameBoard = ({
               flex: `0 1 calc(100% / ${columns} - 10px)`, // Dynamic columns
               minWidth: "160px",
               height: "40px",
-              opacity: word.status === "correctPending" ? 0 : 1,
-              visibility: word.status === "correctPending" ? "hidden" : "visible",
-              transition: "opacity 1.5s ease, visibility 1.5s ease",
+              transition: "opacity 1.5s ease, visibility 1.5s ease", // Smooth fade-out effect
             }}
             onClick={() => handleSelection(word)}
           >
