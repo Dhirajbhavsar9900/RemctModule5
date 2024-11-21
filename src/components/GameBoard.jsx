@@ -1,23 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { connectedWords } from "./../data";
-import AttemptsDisplay from "./AttemptsDisplay"; // Import the AttemptsDisplay component
+import AttemptsDisplay from "./AttemptsDisplay";
 
-const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => {
+const GameBoard = ({
+  groupSize,
+  itemCount,
+  columns,
+  attempts,
+  setAttempts,
+  maxAttempts,
+  setMaxAttempts,
+}) => {
   const [words, setWords] = useState([]);
   const [selected, setSelected] = useState([]);
   const [resetKey, setResetKey] = useState(0);
-  const [gameStatus, setGameStatus] = useState(""); // Initially, no game status
-  const [isGameOver, setIsGameOver] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(""); // To show Win/Lose message
+
+  // Update the number of words based on the groupSize
+  const getNumberOfTiles = () => {
+    if (groupSize === 2) return 8; // 2-group size, 8 tiles
+    if (groupSize === 3) return 12; // 3-group size, 12 tiles
+    if (groupSize === 4) return 16; // 4-group size, 16 tiles
+    return 20; // Default number of tiles for other group sizes
+  };
 
   useEffect(() => {
-    // Fetch words when game configuration changes
     const fetchWords = () => {
       const availableGroups = connectedWords.get(groupSize) || [];
       const shuffledGroups = shuffleArray(availableGroups);
       let selectedWords = [];
 
+      // Adjust the number of tiles based on group size
+      const requiredTiles = getNumberOfTiles();
+      let count = 0;
+
       for (let group of shuffledGroups) {
-        if (selectedWords.length + groupSize <= itemCount) {
+        if (selectedWords.length < requiredTiles) {
           selectedWords.push(
             ...group.map((word) => ({
               word,
@@ -25,18 +43,22 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
               status: "neutral",
             }))
           );
+          count += group.length;
         }
-        if (selectedWords.length >= itemCount) break;
+        if (selectedWords.length >= requiredTiles) break;
       }
 
       return shuffleArray(selectedWords);
     };
 
     setWords(fetchWords());
-    setSelected([]); // Reset selected words
-    setGameStatus(""); // Reset game status on new game
-    setIsGameOver(false); // Set game over to false when resetting the game
-  }, [groupSize, itemCount, resetKey]); // Trigger effect when groupSize, itemCount, or resetKey changes
+    setSelected([]);
+    setStatusMessage(""); // Reset status message on game reset
+  }, [groupSize, itemCount, resetKey]);
+
+  useEffect(() => {
+    setAttempts(0); // Reset attempts when itemCount, groupSize, or columns change
+  }, [itemCount, groupSize, columns, setAttempts]);
 
   const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
@@ -76,32 +98,26 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
             )
           );
         }, 2000);
+
+        setAttempts((prevAttempts) => prevAttempts + 1);
       }
 
-      setSelected([]); // Reset selected words after each selection
-      setAttempts((prevAttempts) => prevAttempts + 1);
+      setSelected([]);
     }
   }, [selected]);
 
   useEffect(() => {
-    // Check if the game is over
-    const allCorrect = words.every((word) => word.status === "correctPending");
-  
-    if (allCorrect) {
-      setGameStatus("win"); // Player wins
-      setIsGameOver(true); // End the game
-    } else if (attempts >= 10 && !isGameOver) { // Player loses after 10 attempts
-      setGameStatus("loss");
-      setIsGameOver(true); // End the game
+    if (words.length === 0) {
+      setStatusMessage("🎉 Congratulations! You Win! 🎉");
+    } else if (attempts >= maxAttempts) {
+      setStatusMessage("😢 Game Over! You Lose! 😢");
     }
-  }, [words, attempts, isGameOver]); // Add isGameOver to prevent multiple updates
-  
+  }, [words, attempts, maxAttempts]);
 
   const handleReset = () => {
     setAttempts(0);
-    setResetKey((prev) => prev + 1); // Increment reset key to trigger game reset
-    setIsGameOver(false); // Set game over to false when resetting the game
-    setGameStatus(""); // Reset game status to empty
+    setResetKey((prev) => prev + 1);
+    setStatusMessage(""); // Clear the status message on reset
   };
 
   return (
@@ -109,13 +125,19 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
       <h1 className="text-xl font-bold text-center mb-4">
         Connect group of {groupSize} words by clicking on related words
       </h1>
+
+      {statusMessage && (
+        <div className="text-2xl font-bold text-center mb-6 text-red-600">
+          {statusMessage}
+        </div>
+      )}
+
       <div
         className="flex flex-wrap justify-center"
         style={{
           maxWidth: `${columns * 500}px`,
           gap: "8px",
           margin: "0 auto",
-          transition: "all 1.5s ease",
         }}
       >
         {words.map((word, index) => (
@@ -130,7 +152,7 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
                 ? "bg-green-500 text-white opacity-100 transition-opacity duration-1500"
                 : selected.includes(word)
                 ? "bg-blue-500 text-white"
-                : "bg-pink-700 text-white"
+                : "bg-orange-500 text-white"
             }`}
             style={{
               flex: `0 1 calc(100% / ${columns} - 10px)`,
@@ -147,28 +169,18 @@ const GameBoard = ({ groupSize, itemCount, columns, attempts, setAttempts }) => 
         ))}
       </div>
 
-      {/* Show result only after game is over */}
-      {isGameOver && (
-        <div className="mt-4 text-center">
-          <h2 className="text-3xl font-bold text-red-500">
-            {gameStatus === "win" ? "You Win!" : "You Lose!"}
-          </h2>
-        </div>
-      )}
-
-      <div className="text-center mt-6">
+      <div className="mt-8">
+        <AttemptsDisplay attempts={attempts} maxAttempts={maxAttempts} />
         <button
           onClick={handleReset}
-          className="bg-blue-600 text-white px-4 py-2 rounded shadow"
+          className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow-lg"
         >
-          Reset
+          Reset Game
         </button>
       </div>
-
-      {/* Pass the attempts to the AttemptsDisplay component */}
-      <AttemptsDisplay attempts={attempts} />
     </div>
   );
 };
 
 export default GameBoard;
+  

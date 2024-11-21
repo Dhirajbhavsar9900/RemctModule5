@@ -10,6 +10,7 @@ const App = () => {
   const [columns, setColumns] = useState(4);
   const [attempts, setAttempts] = useState(0);
   const [reset, setReset] = useState(false);
+  const [maxAttempts, setMaxAttempts] = useState(5); // Add state for maxAttempts
 
   return (
     <div className="relative min-h-screen bg-white">
@@ -20,6 +21,7 @@ const App = () => {
         setItemCount={setItemCount}
         columns={columns}
         setColumns={setColumns}
+        setMaxAttempts={setMaxAttempts} // Pass setMaxAttempts here
       />
       <GameBoard
         groupSize={groupSize}
@@ -28,6 +30,7 @@ const App = () => {
         attempts={attempts}
         setAttempts={setAttempts}
         reset={reset}
+        maxAttempts={maxAttempts} // Pass maxAttempts to GameBoard
       />
     </div>
   );
