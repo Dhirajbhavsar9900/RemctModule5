@@ -14,10 +14,10 @@ const GameBoard = ({
   const [words, setWords] = useState([]);
   const [selected, setSelected] = useState([]);
   const [resetKey, setResetKey] = useState(0);
-  const [statusMessage, setStatusMessage] = useState(""); // Initially empty to hide the message
+  const [statusMessage, setStatusMessage] = useState("");
   const [winCount, setWinCount] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false); // Track if game is started
-  const [isFirstGame, setIsFirstGame] = useState(true); // Track if it's the first game
+  const [gameStarted, setGameStarted] = useState(false);
+  const [isFirstGame, setIsFirstGame] = useState(true);
 
   const getNumberOfTiles = () => {
     if (itemCount === 4) return 8;
@@ -57,12 +57,12 @@ const GameBoard = ({
     if (gameStarted) {
       setWords(fetchWords());
       setSelected([]);
-      setStatusMessage(""); // Reset status message to empty on game reset
+      setStatusMessage("")
     }
   }, [groupSize, itemCount, resetKey, gameStarted]);
 
   useEffect(() => {
-    setAttempts(0); // Reset attempts when itemCount, groupSize, or columns change
+    setAttempts(0);
   }, [itemCount, groupSize, columns, setAttempts]);
 
   const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
@@ -80,12 +80,12 @@ const GameBoard = ({
       if (isMatch) {
         setWords((prev) =>
           prev.map((word) =>
-            selected.includes(word) ? { ...word, status: "correct" } : word // Change status to 'correct' after the match
+            selected.includes(word) ? { ...word, status: "correct" } : word
           )
         );
         setTimeout(() => {
           setWords((prev) =>
-            prev.filter((word) => !selected.includes(word)) // Remove matched words from display
+            prev.filter((word) => !selected.includes(word))
           );
         }, 1500);
       } else {
@@ -115,28 +115,27 @@ const GameBoard = ({
 
     if (isGameCompleted) {
       setStatusMessage("🎉 Congratulations! You Win! 🎉");
-      setWinCount((prevCount) => prevCount + 1); // Increment win count
+      setWinCount((prevCount) => prevCount + 1);
     } else if (attempts >= maxAttempts) {
       setStatusMessage("😢 Game Over! You Lose! 😢");
 
-      // Automatically reload the page if the user loses
+    
       setTimeout(() => {
         window.location.reload(); // Page reload
-      }, 1500); // Wait 1.5 seconds before reload to show the "Game Over" message
+      }, 1500);
     }
   }, [words, attempts, maxAttempts]);
 
   const handleReset = () => {
     setAttempts(0);
     setResetKey((prev) => prev + 1);
-    setStatusMessage(""); // Status message is cleared only after reset and game start
-    setGameStarted(false); // Reset game started flag
-    setIsFirstGame(false); // Mark that the game is no longer the first game after reset
+    setStatusMessage(""); 
+    setGameStarted(false);
+    setIsFirstGame(false); 
   };
-
   const handleStartGame = () => {
-    setGameStarted(true); // Set game as started
-    setStatusMessage(""); // Clear the status message when starting a new game
+    setGameStarted(true); 
+    setStatusMessage(""); 
   };
 
   return (
@@ -145,7 +144,7 @@ const GameBoard = ({
         Connect group of {groupSize} words by clicking on related words
       </h1>
 
-      {/* Only display the message if the game is over or win */}
+      
       {gameStarted && (
         <div
           className={`text-2xl font-bold text-center mb-6 ${
@@ -159,7 +158,7 @@ const GameBoard = ({
       <div
         className="flex flex-wrap justify-center"
         style={{
-          maxWidth: `${columns * 500}px`, // Dynamic max width based on columns
+          maxWidth: `${columns * 500}px`, 
           gap: "8px",
           margin: "0 auto",
         }}
@@ -169,7 +168,7 @@ const GameBoard = ({
             key={index}
             className={`p-2 border rounded shadow text-center transition duration-300 ease-in-out ${
               word.status === "correct"
-                ? "bg-green-500 text-white opacity-0 invisible" // Fade out the tile
+                ? "bg-green-500 text-white opacity-0 invisible" 
                 : word.status === "incorrect"
                 ? "bg-red-500 text-white"
                 : word.status === "correctPending"
@@ -179,10 +178,10 @@ const GameBoard = ({
                 : "bg-orange-500 text-white"
             }`}
             style={{
-              flex: `0 1 calc(100% / ${columns} - 10px)`, // Dynamic columns
+              flex: `0 1 calc(100% / ${columns} - 10px)`, 
               minWidth: "160px",
               height: "40px",
-              transition: "opacity 1.5s ease, visibility 1.5s ease", // Smooth fade-out effect
+              transition: "opacity 1.5s ease, visibility 1.5s ease", 
             }}
             onClick={() => handleSelection(word)}
           >

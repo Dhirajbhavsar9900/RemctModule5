@@ -23,7 +23,6 @@ const ConfigPanel = ({
     setIsSliderActive(false);
   };
 
-  // Update maxAttempts based on itemCount dynamically
   const handleItemCountChange = (value) => {
     setItemCount(value);
     if (value === 4) setMaxAttempts(1);
